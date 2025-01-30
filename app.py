@@ -30,7 +30,7 @@ def process_excel(excel1_path, excel2_path):
         required_columns = ['Description', 'Material', 'Rate', 'C/kg']
         for col in required_columns[:2]:  # Only 'Description' and 'Material' are mandatory in Excel 2
             if col not in df2.columns:
-                return None, f"Excel 2 must contain the column '{col}'."
+                return None, f"Excel 2 must contain the column '{col}'"
 
         df2_filled = df2.copy()
         for index, row in df2.iterrows():
@@ -45,13 +45,13 @@ def process_excel(excel1_path, excel2_path):
         missing_data = df2_filled[df2_filled['Rate'].isnull() | df2_filled['C/kg'].isnull()]
         missing = not missing_data.empty
 
-        output_file_name = os.path.basename(excel2_path).replace(".xlsx", "_updated.xlsx")
+        output_file_name = secure_filename(os.path.basename(excel2_path).replace(".xlsx", "_updated.xlsx"))
         output_path = os.path.join(PROCESSED_FOLDER, output_file_name)
         df2_filled.to_excel(output_path, index=False)
 
         missing_data_path = None
         if missing:
-            missing_file_name = os.path.basename(excel2_path).replace(".xlsx", "_missing.xlsx")
+            missing_file_name = secure_filename(os.path.basename(excel2_path).replace(".xlsx", "_missing.xlsx"))
             missing_data_path = os.path.join(PROCESSED_FOLDER, missing_file_name)
             missing_data.to_excel(missing_data_path, index=False)
 
@@ -94,4 +94,5 @@ def download_file(filename):
     return jsonify({"error": "File not found."}), 404
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    port = int(os.environ.get("PORT", 8000))  # Automatically get Render's port
+    app.run(host="0.0.0.0", port=port, debug=False)  # Debug should be False in production
